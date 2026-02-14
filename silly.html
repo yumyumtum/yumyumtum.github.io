@@ -2,28 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Silly things - yumyumtum</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  .game-container {
-    margin: 30px 0;
-    padding: 20px;
+  .game-link-box {
+    margin: 20px 0;
+    padding: 30px;
     background: rgba(20, 20, 20, 0.8);
     border: 3px solid #0f0;
     border-radius: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    transition: all 0.3s ease;
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   }
-  .game-container h3 {
-    color: #0f0;
-    text-shadow: 0 0 10px #0f0;
-    margin-bottom: 15px;
+  .game-link-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+    background: rgba(30, 30, 30, 0.9);
   }
-  .game-container iframe {
-    width: 100%;
-    height: 600px;
+  .game-link-box h3 {
+    color: #0f0;
+    font-size: 2em;
+    margin-bottom: 10px;
+    text-shadow: 0 0 15px #0f0;
+  }
+  .game-link-box p {
+    color: #0f0;
+    font-size: 1.2em;
+    margin: 10px 0;
+  }
+  .game-link-box .play-button {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 15px 40px;
+    background: transparent;
     border: 2px solid #0f0;
+    color: #0f0;
+    font-size: 1.3em;
     border-radius: 5px;
+    text-shadow: 0 0 10px #0f0;
+    font-weight: bold;
   }
 </style>
 </head>
@@ -34,37 +55,64 @@
   <div class="page-content">
     <h1 class="flicker-neon vhs-text">Silly things</h1>
     
-    <p style="color: #0f0; margin-bottom: 30px;">🎮 Games loaded and ready to play below! Just scroll and click to start.</p>
-    
-    <!-- Game 1: 2048 -->
-    <div class="game-container">
-      <h3>🔢 2048 - Number Puzzle</h3>
-      <iframe src="https://play2048.co/" frameborder="0" allowfullscreen></iframe>
-    </div>
-    
-    <!-- Game 2: Tetris -->
-    <div class="game-container">
-      <h3>🟦 Tetris - Classic</h3>
-      <iframe src="https://tetris.com/play-tetris" frameborder="0" allowfullscreen></iframe>
-    </div>
-    
-    <!-- Game 3: Snake -->
-    <div class="game-container">
-      <h3>🐍 Snake Game</h3>
-      <iframe src="https://playsnake.org/" frameborder="0" allowfullscreen></iframe>
-    </div>
-    
-    <!-- Game 4: Pac-Man -->
-    <div class="game-container">
-      <h3>👻 Pac-Man</h3>
-      <iframe src="https://freepacman.org/" frameborder="0" allowfullscreen></iframe>
-    </div>
-    
-    <p style="color: #0f0; margin-top: 30px; text-align: center;">
-      💡 More games coming soon! If a game doesn't load, try refreshing the page.
+    <p style="color: #0f0; font-size: 1.2em; text-align: center; margin-bottom: 30px;">
+      🎮 Tap any game to play in fullscreen!<br>
+      (Works best on iPad/mobile)
     </p>
     
-    <a href="index.html" class="back-button">← Back to Home</a>
+    <!-- Game 1: 2048 -->
+    <a href="https://play2048.co/" target="_blank" class="game-link-box">
+      <h3>🔢 2048</h3>
+      <p>Number puzzle game</p>
+      <p>Combine tiles to reach 2048!</p>
+      <span class="play-button">▶ PLAY NOW</span>
+    </a>
+    
+    <!-- Game 2: Snake -->
+    <a href="https://www.google.com/fbx?fbx=snake_arcade" target="_blank" class="game-link-box">
+      <h3>🐍 Snake</h3>
+      <p>Classic arcade game</p>
+      <p>Eat apples and grow!</p>
+      <span class="play-button">▶ PLAY NOW</span>
+    </a>
+    
+    <!-- Game 3: Pac-Man -->
+    <a href="https://www.google.com/logos/2010/pacman10-i.html" target="_blank" class="game-link-box">
+      <h3>👻 Pac-Man</h3>
+      <p>Retro classic</p>
+      <p>Eat dots, avoid ghosts!</p>
+      <span class="play-button">▶ PLAY NOW</span>
+    </a>
+    
+    <!-- Game 4: Dinosaur Game -->
+    <a href="https://chromedino.com/" target="_blank" class="game-link-box">
+      <h3>🦖 Dino Game</h3>
+      <p>Chrome's offline game</p>
+      <p>Jump over cacti!</p>
+      <span class="play-button">▶ PLAY NOW</span>
+    </a>
+    
+    <!-- Game 5: Slope -->
+    <a href="https://slope-game.github.io/ramp/" target="_blank" class="game-link-box">
+      <h3>🎿 Slope</h3>
+      <p>3D endless runner</p>
+      <p>Fast-paced action!</p>
+      <span class="play-button">▶ PLAY NOW</span>
+    </a>
+    
+    <!-- Game 6: Flappy Bird -->
+    <a href="https://flappybird.io/" target="_blank" class="game-link-box">
+      <h3>🐦 Flappy Bird</h3>
+      <p>Tap to fly</p>
+      <p>Avoid the pipes!</p>
+      <span class="play-button">▶ PLAY NOW</span>
+    </a>
+    
+    <p style="color: #0f0; margin-top: 40px; text-align: center; font-size: 1.1em;">
+      💡 Games open in new tabs for best performance!
+    </p>
+    
+    <a href="index.html" class="back-button" style="display: block; text-align: center; margin-top: 30px;">← Back to Home</a>
   </div>
 
   <script src="script.js"></script>
