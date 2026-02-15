@@ -30,6 +30,134 @@
     user-select: none;
   }
   
+  #settingsButton {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: transparent;
+    color: #0f0;
+    border: 2px solid #0f0;
+    font-size: 18px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    z-index: 10;
+    transition: all 0.3s;
+  }
+  #settingsButton:hover {
+    background: #0f0;
+    color: #000;
+    box-shadow: 0 0 20px #0f0;
+  }
+  
+  .modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    padding: 40px;
+    border: 3px solid #0f0;
+    border-radius: 10px;
+    text-align: center;
+    display: none;
+    z-index: 100;
+    box-shadow: 0 0 30px #0f0;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modal h1 {
+    color: #0f0;
+    font-size: 48px;
+    margin: 0 0 30px 0;
+    text-shadow: 0 0 20px #0f0;
+  }
+  
+  .modal h2 {
+    color: #0f0;
+    font-size: 24px;
+    margin: 25px 0 15px 0;
+    text-shadow: 0 0 10px #0f0;
+  }
+  
+  .modal p {
+    color: #0f0;
+    font-size: 18px;
+    margin: 10px 0;
+  }
+  
+  .modal button {
+    margin: 10px 5px;
+    padding: 15px 30px;
+    font-size: 18px;
+    background: transparent;
+    color: #0f0;
+    border: 2px solid #0f0;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    transition: all 0.3s;
+  }
+  
+  .modal button:hover, .modal button.active {
+    background: #0f0;
+    color: #000;
+    box-shadow: 0 0 20px #0f0;
+  }
+  
+  .slider-container {
+    margin: 20px 0;
+    padding: 20px;
+    border: 2px solid rgba(0, 255, 0, 0.3);
+    border-radius: 5px;
+  }
+  
+  .slider-container label {
+    color: #0f0;
+    font-size: 18px;
+    display: block;
+    margin-bottom: 15px;
+  }
+  
+  .slider-container input[type="range"] {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 255, 0, 0.2);
+    outline: none;
+    -webkit-appearance: none;
+  }
+  
+  .slider-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #0f0;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #0f0;
+  }
+  
+  .slider-container input[type="range"]::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #0f0;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #0f0;
+  }
+  
+  .slider-value {
+    color: #0f0;
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-shadow: 0 0 10px #0f0;
+  }
+  
   #gameOver {
     position: fixed;
     top: 50%;
@@ -96,8 +224,8 @@
     text-align: center;
     line-height: 1.6;
   }
-  #startButton {
-    margin-top: 30px;
+  #startButton, #settingsButtonStart {
+    margin-top: 15px;
     padding: 20px 50px;
     font-size: 24px;
     background: transparent;
@@ -108,7 +236,7 @@
     font-weight: bold;
     transition: all 0.3s;
   }
-  #startButton:hover {
+  #startButton:hover, #settingsButtonStart:hover {
     background: #0f0;
     color: #000;
     box-shadow: 0 0 30px #0f0;
@@ -158,20 +286,57 @@
   <p><strong>Mobile:</strong> Use joystick</p>
   <p><br>Roll down the slope!</p>
   <p>Avoid red obstacles!</p>
-  <p>Speed increases over time!</p>
-  <button id="startButton">START</button>
+  <button id="startButton">START GAME</button>
+  <button id="settingsButtonStart">⚙️ SETTINGS</button>
 </div>
+
+<div id="settingsModal" class="modal">
+  <h1>⚙️ SETTINGS</h1>
+  
+  <h2>🎯 DIFFICULTY PRESETS</h2>
+  <p>Quick difficulty selection</p>
+  <div>
+    <button class="difficulty-btn" data-difficulty="easy">EASY (0.7x)</button>
+    <button class="difficulty-btn" data-difficulty="normal">NORMAL (1.0x)</button>
+    <button class="difficulty-btn" data-difficulty="hard">HARD (1.5x)</button>
+    <button class="difficulty-btn" data-difficulty="insane">INSANE (2.5x)</button>
+  </div>
+  
+  <h2>🎮 GAME MODES</h2>
+  <p>Different challenge styles</p>
+  <div>
+    <button class="mode-btn" data-mode="classic">CLASSIC</button>
+    <button class="mode-btn" data-mode="zen">ZEN (No speed up)</button>
+    <button class="mode-btn" data-mode="turbo">TURBO (Fast start)</button>
+    <button class="mode-btn" data-mode="chaos">CHAOS (Random)</button>
+  </div>
+  
+  <h2>🎚️ CUSTOM SPEED</h2>
+  <p>Fine-tune your speed</p>
+  <div class="slider-container">
+    <label for="speedSlider">Base Speed Multiplier</label>
+    <input type="range" id="speedSlider" min="0.5" max="3" step="0.1" value="1.0">
+    <div class="slider-value"><span id="speedValue">1.0</span>x</div>
+  </div>
+  
+  <button id="saveSettings" style="margin-top: 30px; padding: 20px 40px; font-size: 22px;">SAVE & CLOSE</button>
+</div>
+
+<button id="settingsButton">⚙️</button>
 
 <div id="hud">
   Score: <span id="score">0</span><br>
-  Speed: <span id="speed">1.0</span>x
+  Speed: <span id="speed">1.0</span>x<br>
+  <span id="modeDisplay" style="font-size: 16px;"></span>
 </div>
 
 <div id="gameOver">
   <h1>GAME OVER</h1>
   <p>Final Score: <span id="finalScore">0</span></p>
   <p>Distance: <span id="finalDistance">0</span>m</p>
+  <p>Mode: <span id="finalMode"></span></p>
   <button id="restartButton">RESTART</button>
+  <button id="menuButton">MAIN MENU</button>
 </div>
 
 <div id="mobileControls">
@@ -184,6 +349,21 @@
 
 <script>
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+// Settings
+let gameSettings = {
+  baseSpeed: 1.0,
+  mode: 'classic',
+  difficulty: 'normal'
+};
+
+// Load saved settings
+try {
+  const saved = localStorage.getItem('slopeSettings');
+  if (saved) {
+    gameSettings = { ...gameSettings, ...JSON.parse(saved) };
+  }
+} catch (e) {}
 
 let gameStarted = false;
 let gameOver = false;
@@ -241,18 +421,16 @@ let lastSegmentZ = 0;
 function createSegment(z) {
   const group = new THREE.Group();
   
-  // Main slope surface (angled down)
   const geometry = new THREE.PlaneGeometry(segmentWidth, segmentLength);
   const material = new THREE.MeshStandardMaterial({ 
     color: 0x222222,
     side: THREE.DoubleSide
   });
   const segment = new THREE.Mesh(geometry, material);
-  segment.rotation.x = -Math.PI / 2.5; // Angled slope!
+  segment.rotation.x = -Math.PI / 2.5;
   segment.position.set(0, 0, z - segmentLength / 2);
   group.add(segment);
   
-  // Left wall
   const wallGeometry = new THREE.BoxGeometry(0.3, 1.5, segmentLength);
   const wallMaterial = new THREE.MeshStandardMaterial({ 
     color: 0x00ff00,
@@ -263,7 +441,6 @@ function createSegment(z) {
   leftWall.position.set(-segmentWidth / 2, 0.75, z - segmentLength / 2);
   group.add(leftWall);
   
-  // Right wall
   const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
   rightWall.position.set(segmentWidth / 2, 0.75, z - segmentLength / 2);
   group.add(rightWall);
@@ -273,20 +450,17 @@ function createSegment(z) {
   return group;
 }
 
-// Create initial segments
 for (let i = 0; i < 10; i++) {
   createSegment(lastSegmentZ);
   lastSegmentZ -= segmentLength;
 }
 
-// Obstacles
 const obstacles = [];
 
 function createObstacle(z) {
   const types = ['cube', 'wall', 'spike'];
   const type = types[Math.floor(Math.random() * types.length)];
   
-  // Calculate Y position on slope
   const slopeAngle = Math.PI / 2.5;
   const baseY = 1 + (z * Math.sin(slopeAngle - Math.PI/2)) * 0.08;
   
@@ -320,7 +494,6 @@ function createObstacle(z) {
       z
     );
   } else {
-    // spike
     const geometry = new THREE.ConeGeometry(0.5, 1.5, 4);
     const material = new THREE.MeshStandardMaterial({ 
       color: 0xff0000,
@@ -340,22 +513,19 @@ function createObstacle(z) {
   obstacles.push(obstacle);
 }
 
-// Spawn obstacles periodically
 let obstacleSpawnZ = -20;
 function spawnObstacles() {
   if (obstacleSpawnZ > ball.position.z - 100) {
-    const spacing = 5 - Math.min(speed * 0.3, 2); // obstacles get closer as speed increases
+    const spacing = 5 - Math.min(speed * 0.3, 2);
     createObstacle(obstacleSpawnZ);
     obstacleSpawnZ -= spacing;
   }
 }
 
-// Controls
 const keys = {};
 window.addEventListener('keydown', (e) => keys[e.key] = true);
 window.addEventListener('keyup', (e) => keys[e.key] = false);
 
-// Mobile joystick
 let joystickActive = false;
 let joystickDelta = 0;
 
@@ -397,7 +567,6 @@ if (isMobile) {
   }
 }
 
-// Collision detection
 function checkCollision() {
   const ballBox = new THREE.Box3().setFromObject(ball);
   
@@ -408,7 +577,6 @@ function checkCollision() {
     }
   }
   
-  // Check if ball fell off
   if (Math.abs(ball.position.x) > segmentWidth / 2 || ball.position.y < -5) {
     return true;
   }
@@ -416,14 +584,11 @@ function checkCollision() {
   return false;
 }
 
-// Game loop
 function update() {
   if (!gameStarted || gameOver) return;
   
-  // Gravity pulls ball down AND forward (slope effect)
   ballVelocityY += gravity;
   
-  // Movement
   if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
     ballVelocityX -= moveSpeed;
   }
@@ -431,43 +596,45 @@ function update() {
     ballVelocityX += moveSpeed;
   }
   
-  // Mobile joystick
   if (isMobile && joystickActive) {
     ballVelocityX += joystickDelta * moveSpeed * 0.8;
   }
   
-  // Apply velocities with drag
   ballVelocityX *= 0.85;
   ball.position.x += ballVelocityX;
   ball.position.y += ballVelocityY;
   
-  // Forward movement (speed increases over time) - slope naturally accelerates
-  speed = 1.0 + distance * 0.0001;
+  // Apply mode-specific speed calculations
+  if (gameSettings.mode === 'zen') {
+    speed = gameSettings.baseSpeed;
+  } else if (gameSettings.mode === 'turbo') {
+    speed = gameSettings.baseSpeed * (2.0 + distance * 0.0002);
+  } else if (gameSettings.mode === 'chaos') {
+    speed = gameSettings.baseSpeed * (1.0 + Math.sin(distance * 0.01) * 0.5 + distance * 0.0001);
+  } else {
+    speed = gameSettings.baseSpeed * (1.0 + distance * 0.0001);
+  }
+  
   const forwardSpeed = 0.15 * speed;
   ball.position.z -= forwardSpeed;
   distance += forwardSpeed;
   
-  // Calculate height on sloped surface
   const slopeAngle = Math.PI / 2.5;
   const slopeY = 1 + (ball.position.z * Math.sin(slopeAngle - Math.PI/2)) * 0.08;
   
-  // Keep ball on slope surface
   if (ball.position.y < slopeY) {
     ball.position.y = slopeY;
     ballVelocityY = 0;
   }
   
-  // Rotate ball (faster rotation for slope effect)
   ball.rotation.x -= 0.15 * speed;
   ball.rotation.z += ballVelocityX * 0.1;
   
-  // Camera follow with better angle for slope
   camera.position.z = ball.position.z + 12;
   camera.position.y = ball.position.y + 8;
   camera.position.x = ball.position.x * 0.3;
   camera.lookAt(ball.position.x, ball.position.y, ball.position.z - 10);
   
-  // Update segments
   for (let i = segments.length - 1; i >= 0; i--) {
     if (segments[i].position.z > ball.position.z + 30) {
       scene.remove(segments[i]);
@@ -480,10 +647,8 @@ function update() {
     lastSegmentZ -= segmentLength;
   }
   
-  // Spawn obstacles
   spawnObstacles();
   
-  // Remove old obstacles
   for (let i = obstacles.length - 1; i >= 0; i--) {
     if (obstacles[i].position.z > ball.position.z + 20) {
       scene.remove(obstacles[i]);
@@ -491,12 +656,10 @@ function update() {
     }
   }
   
-  // Update score
   score = Math.floor(distance);
   document.getElementById('score').textContent = score;
   document.getElementById('speed').textContent = speed.toFixed(1);
   
-  // Check collisions
   if (checkCollision()) {
     endGame();
   }
@@ -506,21 +669,19 @@ function endGame() {
   gameOver = true;
   document.getElementById('finalScore').textContent = score;
   document.getElementById('finalDistance').textContent = Math.floor(distance);
+  document.getElementById('finalMode').textContent = gameSettings.mode.toUpperCase();
   document.getElementById('gameOver').style.display = 'block';
 }
 
 function restartGame() {
-  // Reset ball
   ball.position.set(0, 1, 0);
   ballVelocityX = 0;
   ballVelocityY = 0;
   
-  // Clear obstacles
   obstacles.forEach(obs => scene.remove(obs));
   obstacles.length = 0;
   obstacleSpawnZ = -20;
   
-  // Reset segments
   segments.forEach(seg => scene.remove(seg));
   segments.length = 0;
   lastSegmentZ = 0;
@@ -529,26 +690,120 @@ function restartGame() {
     lastSegmentZ -= segmentLength;
   }
   
-  // Reset game state
   score = 0;
   distance = 0;
-  speed = 1.0;
+  speed = gameSettings.baseSpeed;
   gameOver = false;
   gameStarted = true;
   
+  updateModeDisplay();
   document.getElementById('gameOver').style.display = 'none';
   camera.position.set(0, 8, 12);
 }
 
-// Start game
+function updateModeDisplay() {
+  const modeNames = {
+    'classic': 'Classic',
+    'zen': 'Zen Mode',
+    'turbo': 'Turbo Mode',
+    'chaos': 'Chaos Mode'
+  };
+  document.getElementById('modeDisplay').textContent = `Mode: ${modeNames[gameSettings.mode]}`;
+}
+
+// Settings UI
+const settingsModal = document.getElementById('settingsModal');
+const speedSlider = document.getElementById('speedSlider');
+const speedValue = document.getElementById('speedValue');
+
+speedSlider.value = gameSettings.baseSpeed;
+speedValue.textContent = gameSettings.baseSpeed.toFixed(1);
+
+speedSlider.addEventListener('input', (e) => {
+  const value = parseFloat(e.target.value);
+  speedValue.textContent = value.toFixed(1);
+  gameSettings.baseSpeed = value;
+});
+
+document.querySelectorAll('.difficulty-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    const difficulty = btn.dataset.difficulty;
+    gameSettings.difficulty = difficulty;
+    
+    const speeds = { easy: 0.7, normal: 1.0, hard: 1.5, insane: 2.5 };
+    gameSettings.baseSpeed = speeds[difficulty];
+    speedSlider.value = gameSettings.baseSpeed;
+    speedValue.textContent = gameSettings.baseSpeed.toFixed(1);
+  });
+  
+  if (btn.dataset.difficulty === gameSettings.difficulty) {
+    btn.classList.add('active');
+  }
+});
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    gameSettings.mode = btn.dataset.mode;
+  });
+  
+  if (btn.dataset.mode === gameSettings.mode) {
+    btn.classList.add('active');
+  }
+});
+
+document.getElementById('saveSettings').addEventListener('click', () => {
+  try {
+    localStorage.setItem('slopeSettings', JSON.stringify(gameSettings));
+  } catch (e) {}
+  settingsModal.style.display = 'none';
+});
+
+document.getElementById('settingsButton').addEventListener('click', () => {
+  settingsModal.style.display = 'block';
+});
+
+document.getElementById('settingsButtonStart').addEventListener('click', () => {
+  settingsModal.style.display = 'block';
+});
+
 document.getElementById('startButton').addEventListener('click', () => {
   document.getElementById('startScreen').style.display = 'none';
   gameStarted = true;
+  updateModeDisplay();
 });
 
 document.getElementById('restartButton').addEventListener('click', restartGame);
 
-// Animation loop
+document.getElementById('menuButton').addEventListener('click', () => {
+  document.getElementById('gameOver').style.display = 'none';
+  document.getElementById('startScreen').style.display = 'flex';
+  gameOver = false;
+  gameStarted = false;
+  
+  ball.position.set(0, 1, 0);
+  ballVelocityX = 0;
+  ballVelocityY = 0;
+  obstacles.forEach(obs => scene.remove(obs));
+  obstacles.length = 0;
+  obstacleSpawnZ = -20;
+  segments.forEach(seg => scene.remove(seg));
+  segments.length = 0;
+  lastSegmentZ = 0;
+  for (let i = 0; i < 10; i++) {
+    createSegment(lastSegmentZ);
+    lastSegmentZ -= segmentLength;
+  }
+  score = 0;
+  distance = 0;
+  speed = gameSettings.baseSpeed;
+  camera.position.set(0, 8, 12);
+});
+
 function animate() {
   requestAnimationFrame(animate);
   update();
@@ -557,7 +812,6 @@ function animate() {
 
 animate();
 
-// Handle window resize
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
