@@ -230,12 +230,12 @@ scene.add(ball);
 let ballVelocityX = 0;
 let ballVelocityY = 0;
 const gravity = -0.03;
-const moveSpeed = 0.15;
+const moveSpeed = 0.08;
 
 // Slope segments
 const segments = [];
 const segmentLength = 20;
-const segmentWidth = 10;
+const segmentWidth = 12;
 let lastSegmentZ = 0;
 
 function createSegment(z) {
@@ -409,11 +409,11 @@ function update() {
   
   // Mobile joystick
   if (isMobile && joystickActive) {
-    ballVelocityX += joystickDelta * moveSpeed * 1.5;
+    ballVelocityX += joystickDelta * moveSpeed * 0.8;
   }
   
   // Apply velocities with drag
-  ballVelocityX *= 0.9;
+  ballVelocityX *= 0.85;
   ball.position.x += ballVelocityX;
   ball.position.y += ballVelocityY;
   
