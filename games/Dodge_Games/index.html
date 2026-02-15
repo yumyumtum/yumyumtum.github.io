@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dodge Game Evolved</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>Dodge Game Evolved 🎮</title>
   <style>
     body {
       margin: 0;
@@ -11,12 +11,15 @@
       background: #111;
       color: white;
       font-family: Arial, sans-serif;
+      touch-action: none;
     }
     canvas {
       display: block;
       margin: 0 auto;
       background: #222;
       border: 2px solid #fff;
+      max-width: 100vw;
+      max-height: 100vh;
     }
     #menu, #helpOverlay {
       position: absolute;
@@ -30,6 +33,8 @@
       text-align: center;
       display: none;
       z-index: 10;
+      max-width: 90vw;
+      box-sizing: border-box;
     }
     .menu-button {
       display: block;
@@ -49,6 +54,89 @@
       margin: 10px 0;
       font-size: 16px;
     }
+    
+    /* Mobile controls */
+    #mobileControls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 180px;
+      z-index: 30;
+      display: none;
+      pointer-events: none;
+    }
+    @media (max-width: 768px), (max-height: 768px) {
+      #mobileControls { display: block; }
+    }
+    
+    #joystick {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 120px;
+      height: 120px;
+      background: rgba(255,255,255,0.1);
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      pointer-events: all;
+    }
+    #joystickKnob {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: all 0.1s;
+    }
+    
+    .action-button {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border: 3px solid rgba(255,255,255,0.4);
+      border-radius: 50%;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      pointer-events: all;
+    }
+    .action-button.active {
+      transform: scale(0.95);
+    }
+    
+    #shootButton {
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255,200,0,0.5);
+    }
+    #shootButton.active {
+      background: rgba(255,200,0,0.8);
+    }
+    
+    #missileButton {
+      bottom: 90px;
+      right: 20px;
+      background: rgba(255,100,0,0.5);
+    }
+    #missileButton.active {
+      background: rgba(255,100,0,0.8);
+    }
+    
+    #helpButton {
+      top: 20px;
+      right: 20px;
+      background: rgba(100,100,255,0.5);
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      pointer-events: all;
+    }
   </style>
 </head>
 <body>
@@ -65,16 +153,28 @@
   <!-- Help Overlay -->
   <div id="helpOverlay">
     <h1>How to Play</h1>
-    <p><strong>Move:</strong> Arrow Keys or WASD</p>
-    <p><strong>Shoot Arrow:</strong> Press <code>5</code> (if Level ≥ 5)</p>
-    <p><strong>Fire Missile:</strong> Press <code>1</code> (if Level ≥ 10)</p>
-    <p><strong>Laser:</strong> Hold <code>L</code> or Middle Mouse</p>
+    <p><strong>Desktop:</strong> Arrow Keys or WASD to move</p>
+    <p><strong>Mobile:</strong> Joystick to move</p>
+    <p><strong>Shoot Arrow:</strong> Yellow button (Level ≥ 5)</p>
+    <p><strong>Fire Missile:</strong> Orange button (Level ≥ 10)</p>
     <p>Collect <span style="color:blue">Blue</span> blocks for health & level up</p>
-    <p>Avoid <span style="color:green">Green</span> blocks!</p>
-    <p>Press <strong>H</strong> again to close this help.</p>
+    <p>Avoid <span style="color:red">Red</span> blocks!</p>
+    <p><span style="color:green">Green</span> blocks = instant death</p>
+    <p>Buffs: Yellow=regen, Purple=speed, White=invincible, Pink=shield</p>
+    <button class="menu-button" onclick="closeHelp()">Close</button>
   </div>
 
   <audio id="bgMusic" preload="auto"></audio>
+
+  <!-- Mobile Controls -->
+  <div id="mobileControls">
+    <div id="joystick">
+      <div id="joystickKnob"></div>
+    </div>
+    <div id="shootButton" class="action-button">⚡</div>
+    <div id="missileButton" class="action-button">🚀</div>
+  </div>
+  <div id="helpButton" class="action-button" style="position:fixed;">❓</div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -83,6 +183,24 @@
     const help   = document.getElementById('helpOverlay');
     const finalScore = document.getElementById('finalScore');
     const music = document.getElementById('bgMusic');
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+    // Responsive canvas
+    function resizeCanvas() {
+      const ratio = 400/600;
+      const maxW = window.innerWidth;
+      const maxH = window.innerHeight - (isMobile ? 200 : 0);
+      
+      if (maxW/maxH > ratio) {
+        canvas.height = maxH;
+        canvas.width = maxH * ratio;
+      } else {
+        canvas.width = maxW;
+        canvas.height = maxW / ratio;
+      }
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
     // Game state
     let player, blocks, score, keys, highScore = 0;
@@ -95,6 +213,10 @@
     let speedEnd=0, baseSpeed=5;
     let invEnd=0;
     let shieldEnd=0, shieldActive=false;
+
+    // Mobile joystick
+    let joystickActive = false;
+    let joystickDelta = { x: 0, y: 0 };
 
     const musicFiles = [
       'musical_song_thingies/BANDIT.mp3',
@@ -116,10 +238,16 @@
 
     function initGame() {
       if (!musicStarted) { musicStarted = true; playRandomMusic(); }
-      player = { x:180, y:550, width:40, height:40, speed:baseSpeed, health:2, level:0 };
+      const scale = canvas.width / 400;
+      player = { 
+        x:180*scale, y:550*scale, 
+        width:40*scale, height:40*scale, 
+        speed:baseSpeed*scale, 
+        health:2, level:0 
+      };
       blocks = []; arrows=[]; missiles=[]; explosions=[];
       score=0; keys={}; warningTimer=0; showHelp=false;
-      regenEnd=healTick=0; speedEnd=0; player.speed=baseSpeed;
+      regenEnd=healTick=0; speedEnd=0; player.speed=baseSpeed*scale;
       invEnd=0; shieldEnd=0; shieldActive=false;
       gameRunning=true; menu.style.display='none'; help.style.display='none';
       startTime=Date.now();
@@ -131,21 +259,125 @@
     canvas.addEventListener('click',()=>{ if (!gameRunning) initGame(); });
     document.addEventListener('keydown', e => {
       keys[e.key] = true;
-      // Toggle help overlay
       if (e.key.toLowerCase() === 'h' && gameRunning) {
-        showHelp = !showHelp;
-        help.style.display = showHelp ? 'block' : 'none';
+        toggleHelp();
       }
-      // Fire arrows or missiles
-      if (e.key==='5' && player.level>=5) 
-        arrows.push({ x:player.x+18, y:player.y, width:4, height:10, speed:7, color:'yellow' });
-      if (e.key==='1' && player.level>=10)
-        missiles.push({ x:player.x+15, y:player.y, width:10, height:20, speed:5, color:'orange' });
+      if (e.key==='5' && player.level>=5) shootArrow();
+      if (e.key==='1' && player.level>=10) shootMissile();
     });
     document.addEventListener('keyup', e => keys[e.key] = false);
 
+    function toggleHelp() {
+      showHelp = !showHelp;
+      help.style.display = showHelp ? 'block' : 'none';
+    }
+    function closeHelp() {
+      showHelp = false;
+      help.style.display = 'none';
+    }
+
+    // Mobile help button
+    document.getElementById('helpButton').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      toggleHelp();
+    });
+
+    function shootArrow() {
+      if (player.level < 5) return;
+      const scale = canvas.width / 400;
+      arrows.push({ 
+        x:player.x+player.width/2-2*scale, 
+        y:player.y, 
+        width:4*scale, 
+        height:10*scale, 
+        speed:7*scale, 
+        color:'yellow' 
+      });
+    }
+
+    function shootMissile() {
+      if (player.level < 10) return;
+      const scale = canvas.width / 400;
+      missiles.push({ 
+        x:player.x+player.width/2-5*scale, 
+        y:player.y, 
+        width:10*scale, 
+        height:20*scale, 
+        speed:5*scale, 
+        color:'orange' 
+      });
+    }
+
+    // Mobile controls
+    if (isMobile) {
+      const joystick = document.getElementById('joystick');
+      const joystickKnob = document.getElementById('joystickKnob');
+      const shootBtn = document.getElementById('shootButton');
+      const missileBtn = document.getElementById('missileButton');
+
+      joystick.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        joystickActive = true;
+        updateJoystick(e.touches[0]);
+      });
+
+      joystick.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (joystickActive) updateJoystick(e.touches[0]);
+      });
+
+      joystick.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        joystickActive = false;
+        joystickDelta = { x: 0, y: 0 };
+        joystickKnob.style.transform = "translate(-50%, -50%)";
+      });
+
+      function updateJoystick(touch) {
+        const rect = joystick.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        let dx = touch.clientX - centerX;
+        let dy = touch.clientY - centerY;
+        
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDistance = 35;
+        
+        if (distance > maxDistance) {
+          dx = dx / distance * maxDistance;
+          dy = dy / distance * maxDistance;
+        }
+        
+        joystickDelta.x = dx / maxDistance;
+        joystickDelta.y = dy / maxDistance;
+        
+        joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      }
+
+      shootBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        shootBtn.classList.add('active');
+        shootArrow();
+      });
+      shootBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        shootBtn.classList.remove('active');
+      });
+
+      missileBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        missileBtn.classList.add('active');
+        shootMissile();
+      });
+      missileBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        missileBtn.classList.remove('active');
+      });
+    }
+
     function drawPlayer(){
-      const cx=player.x+20, cy=player.y+20, r=20;
+      const cx=player.x+player.width/2, cy=player.y+player.height/2, r=player.width/2;
       ctx.fillStyle='yellow';
       ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='black';
@@ -159,14 +391,21 @@
 
     function spawnBlock(){
       const now=Date.now(), elapsed=now-startTime, r=Math.random();
-      let b={ x:Math.random()*(canvas.width-30), y:-30, width:30, height:30, speed:2+Math.random()*2 };
+      const scale = canvas.width / 400;
+      let b={ 
+        x:Math.random()*(canvas.width-30*scale), 
+        y:-30*scale, 
+        width:30*scale, 
+        height:30*scale, 
+        speed:(2+Math.random()*2)*scale 
+      };
       if      (r<0.6)  { b.type='red';    b.color='red';    }
       else if (r<0.8)  { b.type='blue';   b.color='blue';   }
       else if (r<0.9)  { b.type='green';  b.color=elapsed<60000?'green':'orange'; }
-      else if (r<0.94) { b.type='yellow'; b.color='yellow'; } // regen
-      else if (r<0.97) { b.type='purple'; b.color='purple'; } // speed
-      else if (r<0.99) { b.type='white';  b.color='white';  } // invincible
-      else             { b.type='pink';   b.color='pink';   } // shield
+      else if (r<0.94) { b.type='yellow'; b.color='yellow'; }
+      else if (r<0.97) { b.type='purple'; b.color='purple'; }
+      else if (r<0.99) { b.type='white';  b.color='white';  }
+      else             { b.type='pink';   b.color='pink';   }
       blocks.push(b);
     }
 
@@ -201,7 +440,6 @@
     }
 
     function updateProjectiles(){
-      // arrows
       for(let i=0;i<arrows.length;i++){
         arrows[i].y-=arrows[i].speed;
         for(let j=0;j<blocks.length;j++){
@@ -213,19 +451,19 @@
         }
         if(arrows[i] && arrows[i].y<0) arrows.splice(i--,1);
       }
-      // missiles & buffs
       for(let i=0;i<missiles.length;i++){
         missiles[i].y-=missiles[i].speed;
         for(let j=0;j<blocks.length;j++){
           const b=blocks[j];
           if(checkCollision(missiles[i],b)){
             const now=Date.now();
+            const scale = canvas.width / 400;
             if(b.type==='yellow'){ regenEnd=now+15000; healTick=now; }
-            else if(b.type==='purple'){ speedEnd=now+10000; player.speed=baseSpeed*2; }
+            else if(b.type==='purple'){ speedEnd=now+10000; player.speed=baseSpeed*2*scale; }
             else if(b.type==='white'){ invEnd=now+8000; }
             else if(b.type==='pink'){ shieldEnd=now+12000; shieldActive=true; }
             if(b.type==='green'){
-              explosions.push({ x:b.x+15, y:b.y+15, radius:10, alpha:1 });
+              explosions.push({ x:b.x+b.width/2, y:b.y+b.height/2, radius:10*scale, alpha:1 });
             }
             blocks.splice(j,1);
             missiles.splice(i--,1);
@@ -237,27 +475,36 @@
     }
 
     function updateExplosions(){
+      const scale = canvas.width / 400;
       for(let i=0;i<explosions.length;i++){
         const ex=explosions[i];
-        ex.radius+=2; ex.alpha-=0.05;
+        ex.radius+=2*scale; ex.alpha-=0.05;
         if(ex.alpha<=0) explosions.splice(i--,1);
       }
     }
 
     function updateBuffs(){
       const now=Date.now();
+      const scale = canvas.width / 400;
       if(now<regenEnd && now-healTick>=1000){
         player.health=Math.min(player.health+0.5,2);
         healTick=now;
       }
-      if(now>=speedEnd) player.speed=baseSpeed;
+      if(now>=speedEnd) player.speed=baseSpeed*scale;
     }
 
     function movePlayer(){
-      if(keys['ArrowLeft'] && player.x>0) player.x-=player.speed;
-      if(keys['ArrowRight'] && player.x+player.width<canvas.width) player.x+=player.speed;
-      if(keys['ArrowUp'] && player.y>0) player.y-=player.speed;
-      if(keys['ArrowDown'] && player.y+player.height<canvas.height) player.y+=player.speed;
+      // Keyboard
+      if(keys['ArrowLeft'] || keys['a'] || keys['A']) player.x = Math.max(0, player.x - player.speed);
+      if(keys['ArrowRight'] || keys['d'] || keys['D']) player.x = Math.min(canvas.width - player.width, player.x + player.speed);
+      if(keys['ArrowUp'] || keys['w'] || keys['W']) player.y = Math.max(0, player.y - player.speed);
+      if(keys['ArrowDown'] || keys['s'] || keys['S']) player.y = Math.min(canvas.height - player.height, player.y + player.speed);
+      
+      // Mobile joystick
+      if (isMobile && joystickActive) {
+        player.x = Math.max(0, Math.min(canvas.width - player.width, player.x + joystickDelta.x * player.speed));
+        player.y = Math.max(0, Math.min(canvas.height - player.height, player.y + joystickDelta.y * player.speed));
+      }
     }
 
     function drawProjectiles(){
@@ -275,26 +522,24 @@
     }
 
     function drawHUD(){
-      ctx.fillStyle='white'; ctx.font='16px Arial'; ctx.textAlign='left';
-      ctx.fillText('Score: '+score,10,20);
-      ctx.fillText('Health: '+Math.max(player.health,0).toFixed(1),10,40);
-      ctx.fillText('Level: '+player.level,10,60);
+      const fontSize = Math.max(12, canvas.width / 25);
+      ctx.fillStyle='white'; ctx.font=`${fontSize}px Arial`; ctx.textAlign='left';
+      ctx.fillText('Score: '+score, 10, fontSize+5);
+      ctx.fillText('Health: '+Math.max(player.health,0).toFixed(1), 10, fontSize*2+5);
+      ctx.fillText('Level: '+player.level, 10, fontSize*3+5);
 
-      // Buff timers
       const now=Date.now();
-      if(now<regenEnd)  ctx.fillText('Regen: '+Math.ceil((regenEnd-now)/1000)+'s',10,80);
-      if(now<speedEnd){ ctx.fillStyle='purple'; ctx.fillText('Speed: '+Math.ceil((speedEnd-now)/1000)+'s',10,100); }
-      if(now<invEnd)  { ctx.fillStyle='white'; ctx.fillText('Invincible: '+Math.ceil((invEnd-now)/1000)+'s',10,120); }
-      if(shieldActive && now<shieldEnd){ ctx.fillStyle='pink'; ctx.fillText('Shield',10,140); }
-
-      // Press H for help
-      ctx.fillStyle='white'; ctx.fillText('Press H for help', canvas.width-160, 20);
+      let yPos = fontSize*4+5;
+      if(now<regenEnd){ ctx.fillStyle='yellow'; ctx.fillText('Regen: '+Math.ceil((regenEnd-now)/1000)+'s', 10, yPos); yPos+=fontSize; }
+      if(now<speedEnd){ ctx.fillStyle='purple'; ctx.fillText('Speed: '+Math.ceil((speedEnd-now)/1000)+'s', 10, yPos); yPos+=fontSize; }
+      if(now<invEnd){ ctx.fillStyle='white'; ctx.fillText('Invincible: '+Math.ceil((invEnd-now)/1000)+'s', 10, yPos); yPos+=fontSize; }
+      if(shieldActive && now<shieldEnd){ ctx.fillStyle='pink'; ctx.fillText('Shield', 10, yPos); }
     }
 
     function drawWarning(){
       if(warningTimer>0){
-        ctx.fillStyle='red'; ctx.font='bold 24px Arial';
-        ctx.fillText('WARNING',10,90);
+        ctx.fillStyle='red'; ctx.font=`bold ${canvas.width/16}px Arial`;
+        ctx.fillText('WARNING', 10, canvas.height/6);
         warningTimer--;
       }
     }
@@ -319,8 +564,9 @@
         clearInterval(spawnInterval);
         gameRunning=false;
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle='white'; ctx.font='bold 20px Arial'; ctx.textAlign='center';
-        ctx.fillText('THANKS TO SKYE YAN FOR MAKING THIS GAME',canvas.width/2,canvas.height/2);
+        ctx.fillStyle='white'; ctx.font=`bold ${canvas.width/20}px Arial`; ctx.textAlign='center';
+        ctx.fillText('THANKS TO SKYE YAN', canvas.width/2, canvas.height/2-10);
+        ctx.fillText('FOR MAKING THIS GAME', canvas.width/2, canvas.height/2+20);
         return;
       }
       if(!gameRunning) return;
@@ -347,8 +593,12 @@
     }
 
     // initial prompt
-    ctx.fillStyle='white'; ctx.font='18px Arial';
-    ctx.fillText('Click to start game & music',100,300);
+    ctx.fillStyle='white'; 
+    ctx.font=`${canvas.width/22}px Arial`;
+    ctx.textAlign='center';
+    ctx.fillText('🎮 Dodge Game Evolved', canvas.width/2, canvas.height/2-20);
+    ctx.font=`${canvas.width/28}px Arial`;
+    ctx.fillText('Tap to start game & music', canvas.width/2, canvas.height/2+20);
   </script>
 </body>
 </html>
