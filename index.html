@@ -25,11 +25,13 @@
   }
   
   #welcomeScreen h1 {
-    font-size: 120px;
+    font-size: 72px;
     color: #0f0;
     text-shadow: 0 0 20px #0f0, 0 0 40px #0f0, 0 0 60px #0f0;
     margin-bottom: 50px;
     animation: flicker 2s infinite;
+    text-align: center;
+    line-height: 1.3;
   }
   
   #playButton {
@@ -80,7 +82,7 @@
   
   @media (max-width: 768px) {
     #welcomeScreen h1 {
-      font-size: 60px;
+      font-size: 36px;
     }
     #playButton {
       padding: 20px 50px;
@@ -95,7 +97,7 @@
   
   <!-- Welcome/Splash Screen -->
   <div id="welcomeScreen">
-    <h1 class="vhs-text">HELLO</h1>
+    <h1 class="vhs-text">hello<br>click play 👇<br>to get started!</h1>
     <button id="playButton">PLAY</button>
   </div>
   
