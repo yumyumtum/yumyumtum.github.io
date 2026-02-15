@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Slope 🎿</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Courier New', monospace;
+    touch-action: none;
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  #hud {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #0f0;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
+    z-index: 10;
+    user-select: none;
+  }
+  
+  #gameOver {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 40px;
+    border: 3px solid #0f0;
+    border-radius: 10px;
+    text-align: center;
+    display: none;
+    z-index: 20;
+    box-shadow: 0 0 30px #0f0;
+  }
+  #gameOver h1 {
+    color: #f00;
+    font-size: 48px;
+    margin: 0 0 20px 0;
+    text-shadow: 0 0 20px #f00;
+  }
+  #gameOver p {
+    color: #0f0;
+    font-size: 24px;
+    margin: 10px 0;
+  }
+  #gameOver button {
+    margin-top: 20px;
+    padding: 15px 40px;
+    font-size: 20px;
+    background: transparent;
+    color: #0f0;
+    border: 2px solid #0f0;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    transition: all 0.3s;
+  }
+  #gameOver button:hover {
+    background: #0f0;
+    color: #000;
+    box-shadow: 0 0 20px #0f0;
+  }
+  
+  #startScreen {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 100;
+    color: #0f0;
+  }
+  #startScreen h1 {
+    font-size: 64px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px #0f0, 0 0 40px #0f0;
+  }
+  #startScreen p {
+    font-size: 18px;
+    margin: 10px 0;
+    max-width: 400px;
+    text-align: center;
+    line-height: 1.6;
+  }
+  #startButton {
+    margin-top: 30px;
+    padding: 20px 50px;
+    font-size: 24px;
+    background: transparent;
+    color: #0f0;
+    border: 3px solid #0f0;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    transition: all 0.3s;
+  }
+  #startButton:hover {
+    background: #0f0;
+    color: #000;
+    box-shadow: 0 0 30px #0f0;
+  }
+  
+  /* Mobile controls */
+  #mobileControls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 30;
+  }
+  @media (max-width: 768px) {
+    #mobileControls { display: flex; }
+  }
+  
+  #joystick {
+    width: 140px;
+    height: 140px;
+    background: rgba(0, 255, 0, 0.1);
+    border: 3px solid rgba(0, 255, 0, 0.4);
+    border-radius: 50%;
+    position: relative;
+  }
+  #joystickKnob {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 255, 0, 0.5);
+    border: 2px solid #0f0;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.1s;
+    box-shadow: 0 0 15px #0f0;
+  }
+</style>
+</head>
+<body>
+
+<div id="startScreen">
+  <h1>🎿 SLOPE</h1>
+  <p><strong>Desktop:</strong> ← → Arrow keys or A/D</p>
+  <p><strong>Mobile:</strong> Use joystick</p>
+  <p><br>Roll down the slope!</p>
+  <p>Avoid red obstacles!</p>
+  <p>Speed increases over time!</p>
+  <button id="startButton">START</button>
+</div>
+
+<div id="hud">
+  Score: <span id="score">0</span><br>
+  Speed: <span id="speed">1.0</span>x
+</div>
+
+<div id="gameOver">
+  <h1>GAME OVER</h1>
+  <p>Final Score: <span id="finalScore">0</span></p>
+  <p>Distance: <span id="finalDistance">0</span>m</p>
+  <button id="restartButton">RESTART</button>
+</div>
+
+<div id="mobileControls">
+  <div id="joystick">
+    <div id="joystickKnob"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+let gameStarted = false;
+let gameOver = false;
+let score = 0;
+let distance = 0;
+let speed = 1.0;
+
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+scene.fog = new THREE.Fog(0x000000, 20, 100);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 5, 8);
+camera.lookAt(0, 0, -10);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 10, 5);
+scene.add(directionalLight);
+
+// Ball
+const ballGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+const ballMaterial = new THREE.MeshStandardMaterial({ 
+  color: 0x00ff00,
+  emissive: 0x00ff00,
+  emissiveIntensity: 0.3,
+  metalness: 0.5,
+  roughness: 0.5
+});
+const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+ball.position.set(0, 1, 0);
+ball.castShadow = true;
+scene.add(ball);
+
+let ballVelocityX = 0;
+let ballVelocityY = 0;
+const gravity = -0.03;
+const moveSpeed = 0.15;
+
+// Slope segments
+const segments = [];
+const segmentLength = 20;
+const segmentWidth = 10;
+let lastSegmentZ = 0;
+
+function createSegment(z) {
+  const geometry = new THREE.PlaneGeometry(segmentWidth, segmentLength);
+  const material = new THREE.MeshStandardMaterial({ 
+    color: 0x222222,
+    side: THREE.DoubleSide
+  });
+  const segment = new THREE.Mesh(geometry, material);
+  segment.rotation.x = -Math.PI / 2;
+  segment.position.set(0, 0, z - segmentLength / 2);
+  scene.add(segment);
+  
+  segments.push(segment);
+  return segment;
+}
+
+// Create initial segments
+for (let i = 0; i < 10; i++) {
+  createSegment(lastSegmentZ);
+  lastSegmentZ -= segmentLength;
+}
+
+// Obstacles
+const obstacles = [];
+
+function createObstacle(z) {
+  const types = ['cube', 'wall', 'spike'];
+  const type = types[Math.floor(Math.random() * types.length)];
+  
+  let obstacle;
+  
+  if (type === 'cube') {
+    const size = 1 + Math.random() * 0.5;
+    const geometry = new THREE.BoxGeometry(size, size, size);
+    const material = new THREE.MeshStandardMaterial({ 
+      color: 0xff0000,
+      emissive: 0xff0000,
+      emissiveIntensity: 0.3
+    });
+    obstacle = new THREE.Mesh(geometry, material);
+    obstacle.position.set(
+      (Math.random() - 0.5) * (segmentWidth - 2),
+      size / 2,
+      z
+    );
+  } else if (type === 'wall') {
+    const geometry = new THREE.BoxGeometry(3, 2, 0.5);
+    const material = new THREE.MeshStandardMaterial({ 
+      color: 0xff0000,
+      emissive: 0xff0000,
+      emissiveIntensity: 0.3
+    });
+    obstacle = new THREE.Mesh(geometry, material);
+    obstacle.position.set(
+      (Math.random() - 0.5) * (segmentWidth - 3),
+      1,
+      z
+    );
+  } else {
+    // spike
+    const geometry = new THREE.ConeGeometry(0.5, 1.5, 4);
+    const material = new THREE.MeshStandardMaterial({ 
+      color: 0xff0000,
+      emissive: 0xff0000,
+      emissiveIntensity: 0.4
+    });
+    obstacle = new THREE.Mesh(geometry, material);
+    obstacle.position.set(
+      (Math.random() - 0.5) * (segmentWidth - 1),
+      0.75,
+      z
+    );
+  }
+  
+  obstacle.castShadow = true;
+  scene.add(obstacle);
+  obstacles.push(obstacle);
+}
+
+// Spawn obstacles periodically
+let obstacleSpawnZ = -20;
+function spawnObstacles() {
+  if (obstacleSpawnZ > ball.position.z - 100) {
+    const spacing = 5 - Math.min(speed * 0.3, 2); // obstacles get closer as speed increases
+    createObstacle(obstacleSpawnZ);
+    obstacleSpawnZ -= spacing;
+  }
+}
+
+// Controls
+const keys = {};
+window.addEventListener('keydown', (e) => keys[e.key] = true);
+window.addEventListener('keyup', (e) => keys[e.key] = false);
+
+// Mobile joystick
+let joystickActive = false;
+let joystickDelta = 0;
+
+if (isMobile) {
+  const joystick = document.getElementById('joystick');
+  const joystickKnob = document.getElementById('joystickKnob');
+
+  joystick.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    joystickActive = true;
+    updateJoystick(e.touches[0]);
+  });
+
+  joystick.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (joystickActive) updateJoystick(e.touches[0]);
+  });
+
+  joystick.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    joystickActive = false;
+    joystickDelta = 0;
+    joystickKnob.style.transform = "translate(-50%, -50%)";
+  });
+
+  function updateJoystick(touch) {
+    const rect = joystick.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    
+    let dx = touch.clientX - centerX;
+    const maxDistance = 40;
+    
+    if (Math.abs(dx) > maxDistance) {
+      dx = Math.sign(dx) * maxDistance;
+    }
+    
+    joystickDelta = dx / maxDistance;
+    joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), -50%)`;
+  }
+}
+
+// Collision detection
+function checkCollision() {
+  const ballBox = new THREE.Box3().setFromObject(ball);
+  
+  for (let obstacle of obstacles) {
+    const obstacleBox = new THREE.Box3().setFromObject(obstacle);
+    if (ballBox.intersectsBox(obstacleBox)) {
+      return true;
+    }
+  }
+  
+  // Check if ball fell off
+  if (Math.abs(ball.position.x) > segmentWidth / 2 || ball.position.y < -5) {
+    return true;
+  }
+  
+  return false;
+}
+
+// Game loop
+function update() {
+  if (!gameStarted || gameOver) return;
+  
+  // Apply gravity
+  ballVelocityY += gravity;
+  
+  // Movement
+  if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+    ballVelocityX -= moveSpeed;
+  }
+  if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+    ballVelocityX += moveSpeed;
+  }
+  
+  // Mobile joystick
+  if (isMobile && joystickActive) {
+    ballVelocityX += joystickDelta * moveSpeed * 1.5;
+  }
+  
+  // Apply velocities with drag
+  ballVelocityX *= 0.9;
+  ball.position.x += ballVelocityX;
+  ball.position.y += ballVelocityY;
+  
+  // Forward movement (speed increases over time)
+  speed = 1.0 + distance * 0.0001;
+  ball.position.z -= 0.15 * speed;
+  distance += 0.15 * speed;
+  
+  // Keep ball on slope
+  if (ball.position.y < 1) {
+    ball.position.y = 1;
+    ballVelocityY = 0;
+  }
+  
+  // Rotate ball
+  ball.rotation.x -= 0.1 * speed;
+  ball.rotation.z += ballVelocityX * 0.1;
+  
+  // Camera follow
+  camera.position.z = ball.position.z + 8;
+  camera.position.x = ball.position.x * 0.3;
+  camera.lookAt(ball.position.x, ball.position.y, ball.position.z - 10);
+  
+  // Update segments
+  for (let i = segments.length - 1; i >= 0; i--) {
+    if (segments[i].position.z > ball.position.z + 30) {
+      scene.remove(segments[i]);
+      segments.splice(i, 1);
+    }
+  }
+  
+  if (segments.length < 10) {
+    createSegment(lastSegmentZ);
+    lastSegmentZ -= segmentLength;
+  }
+  
+  // Spawn obstacles
+  spawnObstacles();
+  
+  // Remove old obstacles
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    if (obstacles[i].position.z > ball.position.z + 20) {
+      scene.remove(obstacles[i]);
+      obstacles.splice(i, 1);
+    }
+  }
+  
+  // Update score
+  score = Math.floor(distance);
+  document.getElementById('score').textContent = score;
+  document.getElementById('speed').textContent = speed.toFixed(1);
+  
+  // Check collisions
+  if (checkCollision()) {
+    endGame();
+  }
+}
+
+function endGame() {
+  gameOver = true;
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('finalDistance').textContent = Math.floor(distance);
+  document.getElementById('gameOver').style.display = 'block';
+}
+
+function restartGame() {
+  // Reset ball
+  ball.position.set(0, 1, 0);
+  ballVelocityX = 0;
+  ballVelocityY = 0;
+  
+  // Clear obstacles
+  obstacles.forEach(obs => scene.remove(obs));
+  obstacles.length = 0;
+  obstacleSpawnZ = -20;
+  
+  // Reset segments
+  segments.forEach(seg => scene.remove(seg));
+  segments.length = 0;
+  lastSegmentZ = 0;
+  for (let i = 0; i < 10; i++) {
+    createSegment(lastSegmentZ);
+    lastSegmentZ -= segmentLength;
+  }
+  
+  // Reset game state
+  score = 0;
+  distance = 0;
+  speed = 1.0;
+  gameOver = false;
+  gameStarted = true;
+  
+  document.getElementById('gameOver').style.display = 'none';
+  camera.position.set(0, 5, 8);
+}
+
+// Start game
+document.getElementById('startButton').addEventListener('click', () => {
+  document.getElementById('startScreen').style.display = 'none';
+  gameStarted = true;
+});
+
+document.getElementById('restartButton').addEventListener('click', restartGame);
+
+// Animation loop
+function animate() {
+  requestAnimationFrame(animate);
+  update();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Handle window resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
