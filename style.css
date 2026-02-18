@@ -38,6 +38,65 @@ body {
   min-height: 100vh;
 }
 
+/* --- Explosion & Shake Animations --- */
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-10px, -10px) rotate(-2deg); }
+  20% { transform: translate(10px, 10px) rotate(2deg); }
+  30% { transform: translate(-10px, 10px) rotate(-1deg); }
+  40% { transform: translate(10px, -10px) rotate(1deg); }
+  50% { transform: translate(-15px, -5px) rotate(-2deg); }
+  60% { transform: translate(15px, 5px) rotate(2deg); }
+  70% { transform: translate(-5px, -15px) rotate(-1deg); }
+  80% { transform: translate(5px, 15px) rotate(1deg); }
+  90% { transform: translate(-10px, 0) rotate(-2deg); }
+}
+
+@keyframes explode {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(20);
+    opacity: 0;
+  }
+}
+
+body.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+body.exploding {
+  overflow: hidden;
+}
+
+#explosionOverlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #0f0 0%, #0ff 30%, transparent 70%);
+  box-shadow: 
+    0 0 50px #0f0,
+    0 0 100px #0ff,
+    0 0 150px #0f0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+}
+
+#explosionOverlay.active {
+  animation: explode 0.6s ease-out forwards;
+}
+
 .vhs-overlay::before {
   content: "";
   position: fixed;

@@ -23,3 +23,35 @@ setInterval(() => {
     }, 50);
   }
 }, 100);
+
+// === EXPLOSION EFFECT ===
+// Create explosion overlay
+const explosionOverlay = document.createElement('div');
+explosionOverlay.id = 'explosionOverlay';
+document.body.appendChild(explosionOverlay);
+
+// Intercept all link clicks
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a, .box');
+  
+  if (link && link.href) {
+    e.preventDefault(); // Stop immediate navigation
+    
+    const targetUrl = link.href;
+    
+    // Trigger shake
+    document.body.classList.add('shake');
+    
+    // After shake starts, trigger explosion
+    setTimeout(() => {
+      explosionOverlay.classList.add('active');
+      document.body.classList.add('exploding');
+    }, 300);
+    
+    // Navigate after explosion completes
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 900);
+  }
+});
+
