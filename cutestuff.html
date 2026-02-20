@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cute Stuff - TommyYanPS</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .cute-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .cute-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+  }
+
+  .cute-box {
+    background: rgba(20, 20, 20, 0.9);
+    border: 3px solid #0f0;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+  }
+
+  .cute-box:hover {
+    border-color: #0ff;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+    transform: translateY(-10px) scale(1.05);
+  }
+
+  .cute-emoji {
+    font-size: 4em;
+    margin-bottom: 15px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .cute-box h3 {
+    color: #0ff;
+    margin: 15px 0;
+    text-shadow: 0 0 10px #0ff;
+  }
+
+  .cute-box p {
+    color: #0f0;
+    line-height: 1.6;
+  }
+
+  .sparkle {
+    animation: sparkle 1.5s infinite;
+  }
+
+  @keyframes sparkle {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.2);
+    }
+  }
+
+  .heart-trail {
+    position: fixed;
+    pointer-events: none;
+    font-size: 2em;
+    animation: heartFloat 2s ease-out forwards;
+    z-index: 9998;
+  }
+
+  @keyframes heartFloat {
+    0% {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-100px) rotate(360deg);
+    }
+  }
+
+  .quote-box {
+    background: rgba(0, 255, 255, 0.1);
+    border-left: 4px solid #0ff;
+    padding: 20px;
+    margin: 30px 0;
+    font-style: italic;
+    color: #0ff;
+    text-align: center;
+    border-radius: 10px;
+  }
+</style>
+</head>
+<body>
+  <div class="vhs-overlay"></div>
+  <div class="custom-cursor"></div>
+  
+  <div class="cute-content">
+    <h1 class="flicker-neon vhs-text">✨ Cute Stuff ✨</h1>
+    
+    <div class="quote-box">
+      <span class="sparkle">💖</span> A collection of adorable things <span class="sparkle">💖</span>
+    </div>
+
+    <!-- Featured: Arilla -->
+    <div style="background: rgba(0, 255, 255, 0.1); border: 3px solid #0ff; border-radius: 15px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);">
+      <h2 style="color: #0ff; text-shadow: 0 0 15px #0ff; margin-bottom: 20px;">✨ Featured Cutie ✨</h2>
+      <img src="arilla.jpg" alt="Arilla the Armadillo" style="max-width: 400px; width: 100%; border-radius: 10px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.3); margin-bottom: 20px;">
+      <h3 style="color: #0ff; font-size: 1.5em; margin: 15px 0;">🦔 Arilla The Armadillo</h3>
+      <p style="color: #0f0; font-size: 1.1em; line-height: 1.6;">
+        A Kellytoy Squishmallow! This adorable 4-inch armadillo plush is soft, squishy, and perfect for cuddling. 
+        With that sweet winking face and silvery scales, Arilla is the cutest armadillo around! 💙
+      </p>
+    </div>
+
+    <div class="cute-grid">
+      
+      <div class="cute-box">
+        <div class="cute-emoji">🐱</div>
+        <h3>Cats</h3>
+        <p>Fluffy, soft, and always landing on their feet. Purr-fect companions!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🐶</div>
+        <h3>Dogs</h3>
+        <p>Loyal, playful, and always happy to see you. Man's best friend!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🐰</div>
+        <h3>Bunnies</h3>
+        <p>Hoppy, fluffy, and adorable. Those little noses are too cute!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🐼</div>
+        <h3>Pandas</h3>
+        <p>Bamboo-munching cuties who roll around and tumble everywhere!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🦊</div>
+        <h3>Foxes</h3>
+        <p>Sly, fluffy, and mysterious. What does the fox say?</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🐧</div>
+        <h3>Penguins</h3>
+        <p>Waddling around in their little tuxedos. Nature's formal wear!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🦦</div>
+        <h3>Otters</h3>
+        <p>Hold hands while sleeping so they don't drift apart. So wholesome!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🦔</div>
+        <h3>Hedgehogs</h3>
+        <p>Tiny spiky friends who curl into adorable balls!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🌸</div>
+        <h3>Cherry Blossoms</h3>
+        <p>Delicate pink petals that bloom in spring. So peaceful!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🌈</div>
+        <h3>Rainbows</h3>
+        <p>Seven colors of happiness painting the sky after rain!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">⭐</div>
+        <h3>Stars</h3>
+        <p>Twinkling lights in the night sky. Make a wish!</p>
+      </div>
+
+      <div class="cute-box">
+        <div class="cute-emoji">🍰</div>
+        <h3>Cake</h3>
+        <p>Sweet, fluffy, and delicious. Every day deserves cake!</p>
+      </div>
+
+    </div>
+
+    <div class="quote-box" style="margin-top: 50px;">
+      <p style="font-size: 1.2em;">"The best things in life are cute and fluffy!" 💕</p>
+    </div>
+
+    <a href="index.html" class="back-button" style="margin-top: 30px;">← Back to Home</a>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Create floating hearts on mouse move
+    let heartTimeout;
+    document.addEventListener('mousemove', (e) => {
+      clearTimeout(heartTimeout);
+      heartTimeout = setTimeout(() => {
+        if (Math.random() > 0.95) { // Only occasionally spawn hearts
+          const heart = document.createElement('div');
+          heart.className = 'heart-trail';
+          heart.textContent = ['💖', '💕', '💗', '💓', '💝'][Math.floor(Math.random() * 5)];
+          heart.style.left = e.clientX + 'px';
+          heart.style.top = e.clientY + 'px';
+          document.body.appendChild(heart);
+          
+          setTimeout(() => {
+            heart.remove();
+          }, 2000);
+        }
+      }, 50);
+    });
+
+    // Add bounce animation to emojis on hover
+    document.querySelectorAll('.cute-emoji').forEach(emoji => {
+      emoji.addEventListener('mouseenter', function() {
+        this.style.animation = 'none';
+        setTimeout(() => {
+          this.style.animation = 'float 0.5s ease-in-out';
+        }, 10);
+      });
+    });
+  </script>
+</body>
+</html>
