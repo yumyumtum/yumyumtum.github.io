@@ -217,21 +217,21 @@
     <div class="chat-container">
         <div class="chat-header">
             <h1>🤖 Ask Me Anything</h1>
-            <p>Chat with my AI assistant</p>
+            <p>I can chat about Tommy or anything else!</p>
         </div>
         
         <div class="suggestions">
-            <div class="suggestion-chip" onclick="sendSuggestion('Tell me about Tommy')">Tell me about Tommy</div>
-            <div class="suggestion-chip" onclick="sendSuggestion('What are his interests?')">What are his interests?</div>
-            <div class="suggestion-chip" onclick="sendSuggestion('Show me his projects')">Show me his projects</div>
-            <div class="suggestion-chip" onclick="sendSuggestion('What music does he like?')">What music does he like?</div>
+            <div class="suggestion-chip" onclick="sendSuggestion('Who is Tommy?')">Who is Tommy?</div>
+            <div class="suggestion-chip" onclick="sendSuggestion('Tell me a joke')">Tell me a joke</div>
+            <div class="suggestion-chip" onclick="sendSuggestion('What can you do?')">What can you do?</div>
+            <div class="suggestion-chip" onclick="sendSuggestion('How are you?')">How are you?</div>
         </div>
         
         <div class="chat-messages" id="chatMessages">
             <div class="message bot">
                 <div class="message-avatar">🤖</div>
                 <div class="message-content">
-                    Hi! I'm Tommy's AI assistant. Ask me anything about him, his projects, or just chat! 😊
+                    Hey! I'm an AI assistant. I can chat about Tommy, tell jokes, answer questions, or just have a conversation. What's up? 😊
                 </div>
             </div>
         </div>
@@ -247,26 +247,108 @@
         const chatInput = document.getElementById('chatInput');
         const sendButton = document.getElementById('sendButton');
         
-        // Pre-programmed responses (demo mode)
-        const responses = {
-            'tommy': "Tommy Yan is a high school student passionate about technology, coding, and quantitative finance. He's built some really cool trading analysis tools and loves basketball too! 🏀",
-            'about': "Tommy is a creative and technical person who loves building things. He's into AI, machine learning, web development, and has a particular interest in quantitative trading. He's also a huge Steph Curry fan! 🏀",
-            'interests': "Tommy's main interests include:\n• AI and Machine Learning 🤖\n• Quantitative Finance 📊\n• Web Development 💻\n• Basketball (Go Warriors!) 🏀\n• Creating fun projects and games\n• Music and creative stuff 🎵",
-            'projects': "Tommy has built some amazing projects like:\n• yumstock - A trading analysis tool with technical indicators\n• yumetfeagle - ETF momentum scanner\n• This cool retro-styled website you're on right now!\n• Various fun games and interactive experiences\n\nCheck out his Projects page to see more! 🚀",
-            'music': "Tommy has a great taste in music! Check out his Favorite Songs page to see what he's been listening to. He's got quite the eclectic playlist! 🎵",
-            'skills': "Tommy knows:\n• Python, JavaScript, HTML/CSS\n• AI/ML frameworks\n• Financial analysis and trading algorithms\n• Web design and development\n• Git and version control\n\nHe's always learning new things! 📚",
-            'basketball': "Tommy is a huge basketball fan, especially of Steph Curry and the Golden State Warriors! 🏀 He even has a page dedicated to Steph on this site. Check it out!",
-            'steph curry': "Yes! Tommy is a massive Steph Curry fan! He even created a special page about Steph on this website. The guy's got great taste - Curry is amazing! 🏀⭐",
-            'contact': "The best way to connect with Tommy is through this website! You can explore his projects, check out his gallery, or see his other social links on the About Me page.",
-            'school': "Tommy is currently in high school and has done some cool school projects. Check out his School Projects page to see what he's been working on! 📚",
-            'games': "Tommy has created and shared some fun games on this site! Check out the Extras section or the Silly Things page - there might be some hidden gems there! 🎮",
-            'default': [
-                "That's an interesting question! Feel free to explore Tommy's website to learn more about him. Try checking out his Gallery, Projects, or About Me pages! 😊",
-                "I'm still learning! But I can tell you Tommy is passionate about tech, coding, and basketball. What else would you like to know? 🤔",
-                "Good question! Tommy has built some cool stuff - check out his yumstock and yumetfeagle projects. They're about financial analysis and trading! 📊",
-                "I'd love to chat more about that! In the meantime, explore the different sections of Tommy's website - there's lots of cool stuff to discover! ✨"
-            ]
-        };
+        let conversationContext = [];
+        
+        // Comprehensive response patterns
+        const patterns = [
+            // Greetings
+            { regex: /^(hi|hello|hey|yo|sup|what's up|whats up)/i, 
+              responses: ["Hey! What's up? 😊", "Hi there! How can I help?", "Hello! Nice to chat with you!", "Yo! What can I do for you?"] },
+            
+            // How are you
+            { regex: /(how are you|how're you|how r u|hows it going|whats new)/i,
+              responses: ["I'm doing great! Just here to chat. How about you?", "Pretty good! Ready to help with whatever you need.", "I'm excellent! Thanks for asking. What about you?"] },
+            
+            // Jokes
+            { regex: /(tell me a joke|joke|make me laugh|something funny)/i,
+              responses: [
+                  "Why do programmers prefer dark mode? Because light attracts bugs! 🐛😄",
+                  "What's a computer's favorite snack? Microchips! 💻🍟",
+                  "Why did the developer go broke? Because he used up all his cache! 💸",
+                  "How do you comfort a JavaScript bug? You console it! 🤓"
+              ]},
+            
+            // Tommy-related
+            { regex: /(who is tommy|about tommy|tommy yan|tell me about tommy)/i,
+              responses: ["Tommy is the creator of this website! He's a high school student who loves coding, AI, trading analysis, and basketball. Pretty cool guy! 🏀💻"] },
+            
+            { regex: /(tommy'?s? projects|what did tommy make|yumstock|yumetfeagle)/i,
+              responses: ["Tommy built some awesome stuff! His main projects are yumstock and yumetfeagle - trading analysis tools with technical indicators and ETF momentum scanning. Check out his Projects page! 📊"] },
+            
+            // Capabilities
+            { regex: /(what can you do|your capabilities|help me|how do you work)/i,
+              responses: ["I can chat about pretty much anything! Ask me about Tommy, tell me to tell jokes, have a conversation, answer questions... I'm here to help! 🤖"] },
+            
+            // Thank you
+            { regex: /(thank you|thanks|thx|appreciate)/i,
+              responses: ["You're welcome! 😊", "No problem at all!", "Happy to help!", "Anytime! 🙌"] },
+            
+            // Math
+            { regex: /what is (\d+)\s*[\+\-\*\/]\s*(\d+)/i,
+              handler: (match) => {
+                  try {
+                      const result = eval(match[0].replace('what is ', ''));
+                      return `That equals ${result}! 🧮`;
+                  } catch {
+                      return "Hmm, I couldn't calculate that. Try a simpler math problem!";
+                  }
+              }},
+            
+            // Time
+            { regex: /(what time|current time|time is it)/i,
+              handler: () => `It's ${new Date().toLocaleTimeString()}! ⏰` },
+            
+            // Date
+            { regex: /(what date|today'?s? date|what day)/i,
+              handler: () => `Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}! 📅` },
+            
+            // Weather
+            { regex: /(weather|temperature|forecast)/i,
+              responses: ["I can't check the weather right now, but you can try weather.com or your phone's weather app! ⛅"] },
+            
+            // Music
+            { regex: /(music|song|favorite song|what music)/i,
+              responses: ["Tommy has great taste in music! Check out his Favorite Songs page on this website to see what he's listening to. 🎵"] },
+            
+            // Basketball
+            { regex: /(basketball|nba|steph curry|warriors|hoops)/i,
+              responses: ["Tommy loves basketball, especially Steph Curry and the Warriors! He even has a page dedicated to Steph on this site. 🏀⭐"] },
+            
+            // Coding/Programming
+            { regex: /(coding|programming|code|developer|software)/i,
+              responses: ["Tommy knows Python, JavaScript, HTML/CSS, and he's into AI/ML too. He's built some cool trading tools and this awesome website! 💻"] },
+            
+            // AI/ML
+            { regex: /(artificial intelligence|machine learning|ai|ml|neural|deep learning)/i,
+              responses: ["Tommy is really into AI and machine learning! He's built some cool projects combining AI with financial analysis. Pretty cutting-edge stuff! 🤖🧠"] },
+            
+            // Games
+            { regex: /(game|play|fun|entertainment)/i,
+              responses: ["Tommy has some games on this site! Check out the Extras section or Silly Things page. There might be some hidden fun stuff! 🎮"] },
+            
+            // Yes/No
+            { regex: /^(yes|yeah|yep|yup|sure|ok|okay)$/i,
+              responses: ["Cool! What else can I help with?", "Awesome! Anything else?", "Great! What's next?"] },
+            
+            { regex: /^(no|nope|nah|not really)$/i,
+              responses: ["No worries! Let me know if you need anything else.", "Alright! Feel free to ask anything.", "That's okay! What else is on your mind?"] },
+            
+            // Goodbye
+            { regex: /(bye|goodbye|see you|later|gtg|gotta go)/i,
+              responses: ["See you later! 👋", "Goodbye! Come back anytime!", "Catch you later! 😊", "Take care! 👋"] },
+            
+            // Name
+            { regex: /(what'?s? your name|who are you|your name)/i,
+              responses: ["I'm Tommy's AI assistant! I don't have a fancy name yet, but I'm here to help. 🤖"] },
+            
+            // Age
+            { regex: /(how old are you|your age)/i,
+              responses: ["I'm just a chatbot, so I don't really have an age! But I was created recently for this website. 🤖"] },
+            
+            // Favorite color/food/etc
+            { regex: /(favorite color|favorite food|favorite)/i,
+              responses: ["I'm a chatbot, so I don't have preferences like humans do. But I think purple and blue gradients look pretty cool! 💜💙"] }
+        ];
         
         // Handle Enter key
         chatInput.addEventListener('keypress', function(e) {
@@ -286,6 +368,7 @@
             
             // Add user message to chat
             addMessage(message, 'user');
+            conversationContext.push({role: 'user', content: message});
             chatInput.value = '';
             
             // Disable input while processing
@@ -302,27 +385,39 @@
                 // Get response
                 const response = getResponse(message);
                 addMessage(response, 'bot');
+                conversationContext.push({role: 'bot', content: response});
                 
                 // Re-enable input
                 sendButton.disabled = false;
                 chatInput.disabled = false;
                 chatInput.focus();
-            }, 1000 + Math.random() * 1000); // Random delay 1-2 seconds
+            }, 800 + Math.random() * 700);
         }
         
         function getResponse(message) {
-            const lowerMessage = message.toLowerCase();
-            
-            // Check for keyword matches
-            for (const [keyword, response] of Object.entries(responses)) {
-                if (keyword === 'default') continue;
-                if (lowerMessage.includes(keyword)) {
-                    return response;
+            // Check each pattern
+            for (const pattern of patterns) {
+                const match = message.match(pattern.regex);
+                if (match) {
+                    if (pattern.handler) {
+                        return pattern.handler(match);
+                    }
+                    if (pattern.responses) {
+                        return pattern.responses[Math.floor(Math.random() * pattern.responses.length)];
+                    }
                 }
             }
             
-            // Return random default response
-            const defaults = responses.default;
+            // Smart defaults based on context
+            const defaults = [
+                "That's interesting! Tell me more.",
+                "I'm not sure about that specifically, but feel free to explore Tommy's website or ask me something else!",
+                "Hmm, good question! I'm still learning. What else would you like to know?",
+                "I don't have info on that right now, but I'm happy to chat about other topics!",
+                "That's beyond my knowledge base at the moment. Want to ask about Tommy or chat about something else?",
+                "I'm not quite sure how to answer that! Try asking me something about this website or just chat. 😊"
+            ];
+            
             return defaults[Math.floor(Math.random() * defaults.length)];
         }
         
