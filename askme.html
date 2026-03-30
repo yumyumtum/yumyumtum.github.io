@@ -229,9 +229,9 @@
         
         <div class="chat-messages" id="chatMessages">
             <div class="message bot">
-                <div class="message-avatar">🤖</div>
+                <div class="message-avatar">👻</div>
                 <div class="message-content">
-                    Hey! I'm an AI assistant. I can chat about Skye, tell jokes, answer questions, or just have a conversation. What's up? 😊
+                    Yo! I'm PhantomGamezChatter. I can chat about Skye, tell jokes, answer questions, or just vibe. What's good? 😎
                 </div>
             </div>
         </div>
@@ -339,7 +339,7 @@
             
             // Name
             { regex: /(what'?s? your name|who are you|your name)/i,
-              responses: ["I'm Skye's AI assistant! I don't have a fancy name yet, but I'm here to help. 🤖"] },
+              responses: ["I'm PhantomGamezChatter! 👻 The AI assistant for this site. Here to vibe and help out! 🎮"] },
             
             // Age
             { regex: /(how old are you|your age)/i,
@@ -427,7 +427,7 @@
             
             const avatar = document.createElement('div');
             avatar.className = 'message-avatar';
-            avatar.textContent = sender === 'bot' ? '🤖' : '👤';
+            avatar.textContent = sender === 'bot' ? '👻' : '👤';
             
             const content = document.createElement('div');
             content.className = 'message-content';
@@ -445,7 +445,7 @@
             const typingDiv = document.createElement('div');
             typingDiv.className = 'message bot';
             typingDiv.innerHTML = `
-                <div class="message-avatar">🤖</div>
+                <div class="message-avatar">👻</div>
                 <div class="message-content">
                     <div class="typing-indicator">
                         <span></span>
