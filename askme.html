@@ -217,7 +217,7 @@
     <div class="chat-container">
         <div class="chat-header">
             <h1>🤖 Ask Me Anything</h1>
-            <p>Chat with my AI assistant - powered by OpenAI</p>
+            <p>Chat with my AI assistant</p>
         </div>
         
         <div class="suggestions">
@@ -247,23 +247,26 @@
         const chatInput = document.getElementById('chatInput');
         const sendButton = document.getElementById('sendButton');
         
-        // System context about Tommy
-        const systemContext = `You are a friendly AI assistant on Tommy Yan's personal website (yumyumtum.github.io). 
-        
-About Tommy:
-- High school student passionate about technology and coding
-- Interested in AI, machine learning, and quantitative finance
-- Created trading analysis tools like yumstock and yumetfeagle
-- Published AI skills on ClawHub
-- Enjoys basketball (fan of Steph Curry)
-- Has a creative side with galleries and fun projects
-- Built this personal website to showcase his work
-
-Be friendly, helpful, and enthusiastic when talking about Tommy's projects. If asked about things not related to Tommy, still be helpful but try to relate it back to his interests when possible.`;
-
-        let conversationHistory = [
-            { role: "system", content: systemContext }
-        ];
+        // Pre-programmed responses (demo mode)
+        const responses = {
+            'tommy': "Tommy Yan is a high school student passionate about technology, coding, and quantitative finance. He's built some really cool trading analysis tools and loves basketball too! 🏀",
+            'about': "Tommy is a creative and technical person who loves building things. He's into AI, machine learning, web development, and has a particular interest in quantitative trading. He's also a huge Steph Curry fan! 🏀",
+            'interests': "Tommy's main interests include:\n• AI and Machine Learning 🤖\n• Quantitative Finance 📊\n• Web Development 💻\n• Basketball (Go Warriors!) 🏀\n• Creating fun projects and games\n• Music and creative stuff 🎵",
+            'projects': "Tommy has built some amazing projects like:\n• yumstock - A trading analysis tool with technical indicators\n• yumetfeagle - ETF momentum scanner\n• This cool retro-styled website you're on right now!\n• Various fun games and interactive experiences\n\nCheck out his Projects page to see more! 🚀",
+            'music': "Tommy has a great taste in music! Check out his Favorite Songs page to see what he's been listening to. He's got quite the eclectic playlist! 🎵",
+            'skills': "Tommy knows:\n• Python, JavaScript, HTML/CSS\n• AI/ML frameworks\n• Financial analysis and trading algorithms\n• Web design and development\n• Git and version control\n\nHe's always learning new things! 📚",
+            'basketball': "Tommy is a huge basketball fan, especially of Steph Curry and the Golden State Warriors! 🏀 He even has a page dedicated to Steph on this site. Check it out!",
+            'steph curry': "Yes! Tommy is a massive Steph Curry fan! He even created a special page about Steph on this website. The guy's got great taste - Curry is amazing! 🏀⭐",
+            'contact': "The best way to connect with Tommy is through this website! You can explore his projects, check out his gallery, or see his other social links on the About Me page.",
+            'school': "Tommy is currently in high school and has done some cool school projects. Check out his School Projects page to see what he's been working on! 📚",
+            'games': "Tommy has created and shared some fun games on this site! Check out the Extras section or the Silly Things page - there might be some hidden gems there! 🎮",
+            'default': [
+                "That's an interesting question! Feel free to explore Tommy's website to learn more about him. Try checking out his Gallery, Projects, or About Me pages! 😊",
+                "I'm still learning! But I can tell you Tommy is passionate about tech, coding, and basketball. What else would you like to know? 🤔",
+                "Good question! Tommy has built some cool stuff - check out his yumstock and yumetfeagle projects. They're about financial analysis and trading! 📊",
+                "I'd love to chat more about that! In the meantime, explore the different sections of Tommy's website - there's lots of cool stuff to discover! ✨"
+            ]
+        };
         
         // Handle Enter key
         chatInput.addEventListener('keypress', function(e) {
@@ -277,7 +280,7 @@ Be friendly, helpful, and enthusiastic when talking about Tommy's projects. If a
             sendMessage();
         }
         
-        async function sendMessage() {
+        function sendMessage() {
             const message = chatInput.value.trim();
             if (!message) return;
             
@@ -292,49 +295,35 @@ Be friendly, helpful, and enthusiastic when talking about Tommy's projects. If a
             // Show typing indicator
             const typingDiv = addTypingIndicator();
             
-            try {
-                // Add to conversation history
-                conversationHistory.push({ role: "user", content: message });
+            // Simulate thinking time
+            setTimeout(() => {
+                typingDiv.remove();
                 
-                // Call OpenAI API
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer YOUR_API_KEY_HERE' // Replace with your API key
-                    },
-                    body: JSON.stringify({
-                        model: 'gpt-3.5-turbo',
-                        messages: conversationHistory,
-                        max_tokens: 500,
-                        temperature: 0.7
-                    })
-                });
+                // Get response
+                const response = getResponse(message);
+                addMessage(response, 'bot');
                 
-                if (!response.ok) {
-                    throw new Error('API request failed');
+                // Re-enable input
+                sendButton.disabled = false;
+                chatInput.disabled = false;
+                chatInput.focus();
+            }, 1000 + Math.random() * 1000); // Random delay 1-2 seconds
+        }
+        
+        function getResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Check for keyword matches
+            for (const [keyword, response] of Object.entries(responses)) {
+                if (keyword === 'default') continue;
+                if (lowerMessage.includes(keyword)) {
+                    return response;
                 }
-                
-                const data = await response.json();
-                const botReply = data.choices[0].message.content;
-                
-                // Add to conversation history
-                conversationHistory.push({ role: "assistant", content: botReply });
-                
-                // Remove typing indicator and show response
-                typingDiv.remove();
-                addMessage(botReply, 'bot');
-                
-            } catch (error) {
-                console.error('Error:', error);
-                typingDiv.remove();
-                addMessage("Sorry, I'm having trouble connecting right now. Please try again later! 😅", 'bot');
             }
             
-            // Re-enable input
-            sendButton.disabled = false;
-            chatInput.disabled = false;
-            chatInput.focus();
+            // Return random default response
+            const defaults = responses.default;
+            return defaults[Math.floor(Math.random() * defaults.length)];
         }
         
         function addMessage(text, sender) {
@@ -347,7 +336,7 @@ Be friendly, helpful, and enthusiastic when talking about Tommy's projects. If a
             
             const content = document.createElement('div');
             content.className = 'message-content';
-            content.textContent = text;
+            content.innerHTML = text.replace(/\n/g, '<br>');
             
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(content);
