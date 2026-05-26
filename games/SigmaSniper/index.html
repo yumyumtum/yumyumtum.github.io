@@ -86,6 +86,25 @@
   #scopeButton.active {
     background: rgba(100,150,255,0.8);
   }
+
+  #touchFairBadge {
+    position: fixed;
+    top: 52px;
+    left: 10px;
+    z-index: 25;
+    color: #fff7c2;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    user-select: none;
+    display: none;
+  }
+  @media (max-width: 768px) {
+    #touchFairBadge { display: block; }
+  }
   
   #dot{
     position:fixed; top:50%; left:50%;
@@ -195,7 +214,8 @@
     <strong>Desktop:</strong> Click to lock mouse<br>
     WASD move | SPACE jump | Left click shoot | Right click scope<br><br>
     <strong>Mobile:</strong> Joystick to move<br>
-    🎯 button to scope | 🔴 button to shoot
+    🎯 button to scope | 🔴 button to shoot<br>
+    Touch Fair Mode: light aim assist for touch screens
   </div>
   <button id="startButton">START GAME</button>
 </div>
@@ -203,6 +223,7 @@
 <div id="hud">
 HP: <span id="hp">100</span> | Score: <span id="score">0</span> | Kills: <span id="kills">0</span>
 </div>
+<div id="touchFairBadge">TOUCH FAIR MODE · aim assist on</div>
 <div id="msg"></div>
 <div id="dot"></div>
 
@@ -297,8 +318,9 @@ if (!isMobile) {
 let yaw=0, pitch=0;
 let tyaw=0, tpitch=0;
 
-const sensitivity = isMobile ? 0.003 : 0.0021;
+const sensitivity = isMobile ? 0.0034 : 0.0021;
 const smoothing = 0.16;
+const touchAimAssist = isMobile;
 
 if (!isMobile) {
   addEventListener("mousemove", (e) => {
@@ -631,11 +653,34 @@ function damagePlayer(d){
 /* ================= SHOOT ================= */
 const raycaster = new THREE.Raycaster();
 
+function getTouchAssistDir() {
+  const baseDir = new THREE.Vector3();
+  camera.getWorldDirection(baseDir);
+  if (!touchAimAssist || !enemies.length) return baseDir;
+
+  const camPos = camera.position.clone();
+  let best = null;
+  let bestScore = 0.985; // only help when already fairly close
+
+  for (const enemy of enemies) {
+    const target = enemy.group.position.clone().add(new THREE.Vector3(0, 3.2, 0));
+    const toEnemy = target.sub(camPos).normalize();
+    const dot = baseDir.dot(toEnemy);
+    if (dot > bestScore) {
+      bestScore = dot;
+      best = toEnemy;
+    }
+  }
+
+  if (!best) return baseDir;
+  // blend instead of snapping, so it still feels fair
+  return baseDir.lerp(best, 0.55).normalize();
+}
+
 function shoot() {
   if (!gameStarted || hp <= 0) return;
 
-  const dir = new THREE.Vector3();
-  camera.getWorldDirection(dir);
+  const dir = getTouchAssistDir();
 
   spawnTracer(camera.position.clone(), dir, false);
 
