@@ -73,6 +73,11 @@
   <canvas id="game" width="400" height="400"></canvas>
   <div class="msg" id="msg">Press SPACE / tap to start</div>
   <div class="hint">Arrows / WASD · swipe on mobile</div>
+  <div class="hint" style="margin-top:.5rem;">
+    <span style="color:#f0f;text-shadow:0 0 6px #f0f">■</span> +1 &nbsp;
+    <span style="color:#39f;text-shadow:0 0 6px #39f">■</span> 10× score (2) &nbsp;
+    <span style="color:#3f6;text-shadow:0 0 6px #3f6">■</span> speed×3 20s
+  </div>
   <a class="back" href="../../games.html">← Back to Games</a>
 
 <script>
@@ -83,7 +88,12 @@
   const bestEl = document.getElementById('best');
   const msgEl = document.getElementById('msg');
   const GRID = 20, CELL = canvas.width / GRID;
-  let snake, dir, nextDir, food, score, best, running, dead, tick, speed;
+  let snake, dir, nextDir, foods, score, best, running, dead, tick, speed, baseSpeed;
+  let mult=1, multLeft=0, boostLeft=0; // 10x score for N eats; speed boost timer (ticks)
+  const FOOD_COUNT=4;
+  // block types: pink=normal, blue=10x score(2 eats), green=speed boost(20s)
+  const TYPES=['pink','pink','pink','blue','green'];
+  const COLORS={pink:'#f0f',blue:'#39f',green:'#3f6'};
 
   best = parseInt(localStorage.getItem('neonSnakeBest')||'0',10);
   bestEl.textContent = best;
@@ -91,15 +101,26 @@
   function reset(){
     snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
     dir = {x:1,y:0}; nextDir = {x:1,y:0};
-    score = 0; speed = 130; dead=false; running=false;
+    score = 0; baseSpeed = 130; speed = baseSpeed; dead=false; running=false;
+    mult=1; multLeft=0; boostLeft=0;
+    foods=[];
     scoreEl.textContent = 0;
     placeFood();
     draw();
     msgEl.textContent = 'Press SPACE / tap to start';
   }
+  function occupied(x,y){
+    return snake.some(s=>s.x===x&&s.y===y) || (foods&&foods.some(f=>f.x===x&&f.y===y));
+  }
+  function makeFood(){
+    let x,y;
+    do { x=(Math.random()*GRID)|0; y=(Math.random()*GRID)|0; } while(occupied(x,y));
+    const type = TYPES[(Math.random()*TYPES.length)|0];
+    return {x,y,type};
+  }
   function placeFood(){
-    do { food = {x: (Math.random()*GRID)|0, y:(Math.random()*GRID)|0}; }
-    while(snake.some(s=>s.x===food.x&&s.y===food.y));
+    foods=[];
+    for(let i=0;i<FOOD_COUNT;i++) foods.push(makeFood());
   }
   function start(){
     if(running) return;
@@ -118,12 +139,28 @@
       return gameOver();
     }
     snake.unshift(head);
-    if(head.x===food.x&&head.y===food.y){
-      score++; scoreEl.textContent=score;
-      if(speed>60) speed-=3;
-      placeFood();
+    const fi = foods.findIndex(f=>f.x===head.x&&f.y===head.y);
+    if(fi>=0){
+      const eaten = foods[fi];
+      if(eaten.type==='blue'){ mult=10; multLeft=2; }
+      else if(eaten.type==='green'){ boostLeft += 20*10; } // 20s @ ~10 ticks/s
+      const gain = mult;
+      score += gain; scoreEl.textContent=score;
+      if(multLeft>0){ multLeft--; if(multLeft<=0) mult=1; }
+      if(baseSpeed>60) baseSpeed-=3;
+      foods.splice(fi,1); foods.push(makeFood());
     } else { snake.pop(); }
+    // apply speed boost
+    if(boostLeft>0){ boostLeft--; speed=Math.max(30, Math.round(baseSpeed/3)); }
+    else { speed=baseSpeed; }
+    updateStatus();
     draw();
+  }
+  function updateStatus(){
+    let parts=[];
+    if(mult>1) parts.push('10x SCORE x'+multLeft);
+    if(boostLeft>0) parts.push('SPEED x3 '+Math.ceil(boostLeft/10)+'s');
+    msgEl.textContent = parts.join('  ·  ');
   }
   function gameOver(){
     running=false; dead=true; clearTimeout(tick);
@@ -145,7 +182,7 @@
       ctx.beginPath();ctx.moveTo(i*CELL,0);ctx.lineTo(i*CELL,canvas.height);ctx.stroke();
       ctx.beginPath();ctx.moveTo(0,i*CELL);ctx.lineTo(canvas.width,i*CELL);ctx.stroke();
     }
-    cell(food.x,food.y,'#f0f','#f0f');
+    foods.forEach(f=>{ const c=COLORS[f.type]; cell(f.x,f.y,c,c); });
     snake.forEach((s,i)=>{
       const c = i===0 ? '#fff' : '#0ff';
       cell(s.x,s.y,c,'#0ff');
