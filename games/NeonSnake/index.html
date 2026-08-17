@@ -76,7 +76,8 @@
   <div class="hint" style="margin-top:.5rem;">
     <span style="color:#f0f;text-shadow:0 0 6px #f0f">■</span> +1 &nbsp;
     <span style="color:#39f;text-shadow:0 0 6px #39f">■</span> 10× score (2) &nbsp;
-    <span style="color:#3f6;text-shadow:0 0 6px #3f6">■</span> speed×3 20s
+    <span style="color:#3f6;text-shadow:0 0 6px #3f6">■</span> speed×3 20s &nbsp;
+    <span style="color:#fc0;text-shadow:0 0 6px #fc0">■</span> +20 length
   </div>
   <a class="back" href="../../games.html">← Back to Games</a>
 
@@ -89,11 +90,11 @@
   const msgEl = document.getElementById('msg');
   const GRID = 20, CELL = canvas.width / GRID;
   let snake, dir, nextDir, foods, score, best, running, dead, tick, speed, baseSpeed;
-  let mult=1, multLeft=0, boostLeft=0; // 10x score for N eats; speed boost timer (ticks)
+  let mult=1, multLeft=0, boostLeft=0, growPending=0;
   const FOOD_COUNT=4;
   // block types: pink=normal, blue=10x score(2 eats), green=speed boost(20s)
-  const TYPES=['pink','pink','pink','blue','green'];
-  const COLORS={pink:'#f0f',blue:'#39f',green:'#3f6'};
+  const TYPES=['pink','pink','pink','blue','green','grow'];
+  const COLORS={pink:'#f0f',blue:'#39f',green:'#3f6',grow:'#fc0'};
 
   best = parseInt(localStorage.getItem('neonSnakeBest')||'0',10);
   bestEl.textContent = best;
@@ -102,7 +103,7 @@
     snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
     dir = {x:1,y:0}; nextDir = {x:1,y:0};
     score = 0; baseSpeed = 130; speed = baseSpeed; dead=false; running=false;
-    mult=1; multLeft=0; boostLeft=0;
+    mult=1; multLeft=0; boostLeft=0; growPending=0;
     foods=[];
     scoreEl.textContent = 0;
     placeFood();
@@ -144,12 +145,19 @@
       const eaten = foods[fi];
       if(eaten.type==='blue'){ mult=10; multLeft=2; }
       else if(eaten.type==='green'){ boostLeft += 20*10; } // 20s @ ~10 ticks/s
+      else if(eaten.type==='grow'){ growPending += 20; } // grow 20 segments
       const gain = mult;
       score += gain; scoreEl.textContent=score;
       if(multLeft>0){ multLeft--; if(multLeft<=0) mult=1; }
       if(baseSpeed>60) baseSpeed-=3;
       foods.splice(fi,1); foods.push(makeFood());
     } else { snake.pop(); }
+    // grow block: add extra segments (don't pop)
+    if(growPending>0){
+      const tail=snake[snake.length-1];
+      snake.push({x:tail.x,y:tail.y});
+      growPending--;
+    }
     // apply speed boost
     if(boostLeft>0){ boostLeft--; speed=Math.max(30, Math.round(baseSpeed/3)); }
     else { speed=baseSpeed; }
@@ -160,6 +168,7 @@
     let parts=[];
     if(mult>1) parts.push('10x SCORE x'+multLeft);
     if(boostLeft>0) parts.push('SPEED x3 '+Math.ceil(boostLeft/10)+'s');
+    if(growPending>0) parts.push('GROW +'+growPending);
     msgEl.textContent = parts.join('  ·  ');
   }
   function gameOver(){
