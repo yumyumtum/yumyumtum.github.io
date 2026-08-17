@@ -78,7 +78,8 @@
     <span style="color:#39f;text-shadow:0 0 6px #39f">■</span> 10× score (2) &nbsp;
     <span style="color:#3f6;text-shadow:0 0 6px #3f6">■</span> speed×3 20s &nbsp;
     <span style="color:#fc0;text-shadow:0 0 6px #fc0">■</span> +20 length &nbsp;
-    <span style="color:#f33;text-shadow:0 0 6px #f33">■</span> -10 length (keep score)
+    <span style="color:#f33;text-shadow:0 0 6px #f33">■</span> -10 length (keep score) &nbsp;
+    <span style="color:#a63;text-shadow:0 0 6px #a63">■</span> fat x3 10s
   </div>
   <a class="back" href="../../games.html">← Back to Games</a>
 
@@ -91,11 +92,11 @@
   const msgEl = document.getElementById('msg');
   const GRID = 20, CELL = canvas.width / GRID;
   let snake, dir, nextDir, foods, score, best, running, dead, tick, speed, baseSpeed;
-  let mult=1, multLeft=0, boostLeft=0, growPending=0, shrinkPending=0;
+  let mult=1, multLeft=0, boostLeft=0, growPending=0, shrinkPending=0, fatLeft=0;
   const FOOD_COUNT=4;
   // block types: pink=normal, blue=10x score(2 eats), green=speed boost(20s)
-  const TYPES=['pink','pink','pink','blue','green','grow','shrink'];
-  const COLORS={pink:'#f0f',blue:'#39f',green:'#3f6',grow:'#fc0',shrink:'#f33'};
+  const TYPES=['pink','pink','pink','blue','green','grow','shrink','fat'];
+  const COLORS={pink:'#f0f',blue:'#39f',green:'#3f6',grow:'#fc0',shrink:'#f33',fat:'#a63'};
 
   best = parseInt(localStorage.getItem('neonSnakeBest')||'0',10);
   bestEl.textContent = best;
@@ -104,7 +105,7 @@
     snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
     dir = {x:1,y:0}; nextDir = {x:1,y:0};
     score = 0; baseSpeed = 130; speed = baseSpeed; dead=false; running=false;
-    mult=1; multLeft=0; boostLeft=0; growPending=0; shrinkPending=0;
+    mult=1; multLeft=0; boostLeft=0; growPending=0; shrinkPending=0; fatLeft=0;
     foods=[];
     scoreEl.textContent = 0;
     placeFood();
@@ -148,6 +149,7 @@
       else if(eaten.type==='green'){ boostLeft += 20*10; } // 20s @ ~10 ticks/s
       else if(eaten.type==='grow'){ growPending += 20; } // grow 20 segments
       else if(eaten.type==='shrink'){ shrinkPending += 10; } // remove 10 segments, keep score
+      else if(eaten.type==='fat'){ fatLeft += 10*10; } // 3x width for 10s
       const gain = mult;
       score += gain; scoreEl.textContent=score;
       if(multLeft>0){ multLeft--; if(multLeft<=0) mult=1; }
@@ -168,6 +170,7 @@
     // apply speed boost
     if(boostLeft>0){ boostLeft--; speed=Math.max(30, Math.round(baseSpeed/3)); }
     else { speed=baseSpeed; }
+    if(fatLeft>0) fatLeft--;
     updateStatus();
     draw();
   }
@@ -177,6 +180,7 @@
     if(boostLeft>0) parts.push('SPEED x3 '+Math.ceil(boostLeft/10)+'s');
     if(growPending>0) parts.push('GROW +'+growPending);
     if(shrinkPending>0) parts.push('SHRINK -'+shrinkPending);
+    if(fatLeft>0) parts.push('FAT x3 '+Math.ceil(fatLeft/10)+'s');
     msgEl.textContent = parts.join('  ·  ');
   }
   function gameOver(){
@@ -200,9 +204,18 @@
       ctx.beginPath();ctx.moveTo(0,i*CELL);ctx.lineTo(canvas.width,i*CELL);ctx.stroke();
     }
     foods.forEach(f=>{ const c=COLORS[f.type]; cell(f.x,f.y,c,c); });
+    const fat = fatLeft>0;
     snake.forEach((s,i)=>{
       const c = i===0 ? '#fff' : '#0ff';
-      cell(s.x,s.y,c,'#0ff');
+      if(fat){
+        // 3x width: draw a bigger glowing block centered on the cell
+        const cx=s.x*CELL+CELL/2, cy=s.y*CELL+CELL/2, size=CELL*1.6;
+        ctx.fillStyle=c; ctx.shadowColor='#a63'; ctx.shadowBlur=16;
+        ctx.fillRect(cx-size/2, cy-size/2, size, size);
+        ctx.shadowBlur=0;
+      } else {
+        cell(s.x,s.y,c,'#0ff');
+      }
     });
   }
   function turn(x,y){
